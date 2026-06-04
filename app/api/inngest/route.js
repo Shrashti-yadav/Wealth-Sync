@@ -6,8 +6,10 @@ import {
   generateMonthlyReports,
   checkBudgetAlerts,
 } from "@/lib/inngest/function";
+import aj from "@/lib/arcjet";
+import { NextResponse } from "next/server";
 
-export const { GET, POST, PUT } = serve({
+const { GET, POST: inngestPOST, PUT } = serve({
   client: inngest,
   functions: [
     processRecurringTransaction,
@@ -16,3 +18,13 @@ export const { GET, POST, PUT } = serve({
     checkBudgetAlerts,
   ],
 });
+
+export { GET, PUT };
+
+export async function POST(req) {
+  const decision = await aj.protect(req, { userId: "inngest" });
+  if (decision.isDenied()) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  return inngestPOST(req);
+}
