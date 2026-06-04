@@ -116,14 +116,30 @@ export async function invalidateFinancialCache(userId) {
 
 export async function chatWithAI(userMessage, chatHistory = []) {
   try {
+    // const { userId } = await auth();
+    // if (!userId) throw new Error("Unauthorized");
+
+    // const user = await db.user.findUnique({
+    //   where: { clerkUserId: userId },
+    // });
+    // if (!user) throw new Error("User not found");
     const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+if (!userId) {
+  return {
+    success: true,
+    data: "🔐 Please log in first to use WealthSync AI!\n\nSign in to get personalized financial insights, track your expenses, and chat with your AI assistant. 💼",
+  };
+}
 
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-    if (!user) throw new Error("User not found");
-
+const user = await db.user.findUnique({
+  where: { clerkUserId: userId },
+});
+if (!user) {
+  return {
+    success: true,
+    data: "👤 Account not found. Please complete your sign-up to get started! 🚀",
+  };
+}
     if (!userMessage?.trim()) {
       throw new Error("Message cannot be empty");
     }

@@ -58,20 +58,58 @@ export function Chatbot() {
   }, [messages, isTyping]);
 
   /* ---------------- AI RESPONSE ---------------- */
-  useEffect(() => {
-    if (aiResponse?.success) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          text: formatMessage(aiResponse.data),
-          sender: "bot",
-          timestamp: new Date(),
-        },
-      ]);
-    }
-  }, [aiResponse]);
+  // useEffect(() => {
+  //   if (aiResponse?.success) {
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       {
+  //         id: Date.now().toString(),
+  //         text: formatMessage(aiResponse.data),
+  //         sender: "bot",
+  //         timestamp: new Date(),
+  //       },
+  //     ]);
+  //   }
+  // }, [aiResponse]);
+//   useEffect(() => {
+//   if (aiResponse && !aiResponse.success) {
+//     setMessages((prev) => [
+//       ...prev,
+//       {
+//         id: Date.now().toString(),
+//         text: aiResponse.error || "Something went wrong. Please try again 🙏",
+//         sender: "bot",
+//         timestamp: new Date(),
+//       },
+//     ]);
+//   }
+// }, [aiResponse]);
+  // Fix 1: handle both success and failure from aiResponse
+useEffect(() => {
+  if (!aiResponse) return;
 
+  if (aiResponse.success) {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        text: formatMessage(aiResponse.data),
+        sender: "bot",
+        timestamp: new Date(),
+      },
+    ]);
+  } else {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        text: aiResponse.error || "Something went wrong. Please try again 🙏",
+        sender: "bot",
+        timestamp: new Date(),
+      },
+    ]);
+  }
+}, [aiResponse]);
   /* ---------------- ERROR ---------------- */
   useEffect(() => {
     if (error) {
