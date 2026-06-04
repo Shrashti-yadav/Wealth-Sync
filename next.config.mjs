@@ -14,6 +14,12 @@ const nextConfig = {
       bodySizeLimit: "5mb",
     },
   },
+  serverExternalPackages: [
+    "@prisma/client",
+    "prisma",
+    "@google/generative-ai",
+    "@arcjet/next",
+  ],
 };
 
 export default nextConfig;
