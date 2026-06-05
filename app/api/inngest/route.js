@@ -1,3 +1,7 @@
+// 👇 FORCE VERCEL TO RUN THIS ROUTE VIA STANDARD NODEJS, NOT EDGE
+export const runtime = "nodejs"; 
+export const dynamic = "force-dynamic";
+
 import { serve } from "inngest/next";
 import { inngest } from "@/lib/inngest/client";
 import {
@@ -9,10 +13,9 @@ import {
 import aj from "@/lib/arcjet";
 import { NextResponse } from "next/server";
 
-// 👇 We explicitly define the signingKey right here inside the serve object
 const { GET, POST: inngestPOST, PUT } = serve({
   client: inngest,
-  signingKey: process.env.INNGEST_SIGNING_KEY, 
+  signingKey: process.env.INNGEST_SIGNING_KEY, // Will now read correctly
   functions: [
     processRecurringTransaction,
     triggerRecurringTransactions,
@@ -26,7 +29,6 @@ export { GET, PUT };
 export async function POST(req) {
   const url = new URL(req.url);
   
-  // Skip Arcjet firewall checking for Inngest automated cloud systems
   const isInngest = 
     req.headers.has("x-inngest-signature") || 
     req.headers.has("x-inngest-sdk") ||
