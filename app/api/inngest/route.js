@@ -9,35 +9,35 @@ import {
 import aj from "@/lib/arcjet";
 import { NextResponse } from "next/server";
 
+// 👇 We explicitly define the signingKey right here inside the serve object
 const { GET, POST: inngestPOST, PUT } = serve({
   client: inngest,
+  signingKey: process.env.INNGEST_SIGNING_KEY, 
   functions: [
     processRecurringTransaction,
     triggerRecurringTransactions,
     generateMonthlyReports,
     checkBudgetAlerts,
   ],
-  // Explicitly supply the production signing key
-  signingKey: process.env.INNGEST_SIGNING_KEY,
 });
 
 export { GET, PUT };
 
 export async function POST(req) {
-  // 1. Check if the request is an internal Inngest sync action or execution
-  // Inngest requests include a signature or special headers.
-  const isInngestRequest = 
+  const url = new URL(req.url);
+  
+  // Skip Arcjet firewall checking for Inngest automated cloud systems
+  const isInngest = 
     req.headers.has("x-inngest-signature") || 
-    req.headers.has("x-inngest-sdk");
+    req.headers.has("x-inngest-sdk") ||
+    url.searchParams.has("introspect");
 
-  // 2. Only run Arcjet protection if it's NOT an Inngest system request
-  if (!isInngestRequest) {
+  if (!isInngest) {
     const decision = await aj.protect(req, { userId: "inngest" });
     if (decision.isDenied()) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }
 
-  // 3. Hand off the request to the Inngest serve engine
   return inngestPOST(req);
 }
